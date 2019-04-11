@@ -15,6 +15,10 @@
  * die eine laufzeitefffiziente Auusführung der ISR
  * ermöglichen.
  */
+LOCAL UInt* LEDptr = &LEDarr1;
+LOCAL UShort LEDcnt = 25;
+LOCAL UShort hyst = 0;
+LOCAL UInt LEDarr1[] = {1, 1, 1, 1, 1, 1, 1, 1, 0, 0}
 
 GLOBAL Void set_blink_muster(UInt arg) {
 /*
@@ -37,8 +41,30 @@ GLOBAL Void TA0_Init(Void) {
 
 #pragma vector = TIMER0_A0_VECTOR
 __interrupt Void TA0_ISR(Void) {
-
    /*
     * Der Inhalt der ISR ist zu implementieren
     */
+    if(--LEDcnt EQ 0) {
+        LEDcnt = LEDmax;
+        LEDptr += 1;
+        SETBIT(P1OUT, BIT2);
+    }
+    if(TSTBIT(P1IN, BIT0)) {
+        ++BTN1hyst;
+        if(BTN1hyst EQ 5) {
+            set_event(EVENT_BTN1);
+            __low_power_mode_off_on_exit();
+        }
+    } elsif(BTN1hyst GT 0) {
+        BTN1hyst--;
+    }
+    if(TSTBIT(P1IN, BIT1)) {
+        ++BTN2hyst;
+        if(BTN2hyst EQ 5) {
+            set_event(EVENT_BTN2);
+            __low_power_mode_off_on_exit();
+        }
+    } elsif(BTN1hyst GT 0) {
+        BTN2hyst--;
+    }
 }

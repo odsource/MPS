@@ -64,4 +64,13 @@ LOCAL Void Port_Init(Void) {
    CLRBIT(P1SEL0, BIT2);
    CLRBIT(P1SEL1, BIT2);
    CLRBIT(P1REN,  BIT2);
+
+   // set up Pin 0 at Port 1 => input, BTN1
+   // set up Pin 1 at Port 1 => input, BTN2
+   CLRBIT(P1OUT,  BIT0 + BIT1);
+   CLRBIT(P1DIR,  BIT0 + BIT1);
+   CLRBIT(P1SEL0, BIT0 + BIT1);
+   CLRBIT(P1SEL1, BIT0 + BIT1);
+   CLRBIT(P1REN,  BIT0 + BIT1);
+
 }
