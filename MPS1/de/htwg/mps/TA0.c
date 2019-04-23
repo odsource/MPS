@@ -15,15 +15,6 @@
  * die eine laufzeitefffiziente Auusführung der ISR
  * ermöglichen.
  */
-LOCAL UInt LEDarr1[] = {200, 50, 0};
-LOCAL UInt LEDarr2[] = {75, 75, 0};
-LOCAL UInt LEDarr3[] = {25, 25, 0};
-LOCAL UInt LEDarr4[] = {50, 200, 0};
-LOCAL UInt LEDarr5[] = {50, 50, 50, 200, 0};
-LOCAL UInt LEDarr6[] = {50, 50, 50, 50, 50, 200, 0};
-
-LOCAL UInt* LED_arr[] = {LEDarr1, LEDarr2, LEDarr3, LEDarr4, LEDarr5, LEDarr6};
-
 LOCAL UInt* LED_arr_ptr = &LEDarr1;
 LOCAL UShort LEDcnt = 200;
 LOCAL UShort array_length = 3;
