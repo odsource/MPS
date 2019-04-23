@@ -42,13 +42,14 @@ GLOBAL Void set_blink_muster(UInt arg) {
         array_length = 3;
     } else {
         if(arg EQ 4) {
-            array_length = 4;
+            array_length = 5;
         }
         if(arg EQ 5) {
             array_length = 7;
         }
     }
     LEDcnt = *LED_arr_ptr;
+    SETBIT(P1OUT, BIT2);
 }
 
 // Der Timer A0 ist bereits initialisiert
@@ -72,7 +73,11 @@ __interrupt Void TA0_ISR(Void) {
     if(--LEDcnt EQ 0) {
         LED_arr_ptr = LED_arr_ptr + hop;
         if(*LED_arr_ptr EQ 0) {
-            LED_arr_ptr = LED_arr_ptr - ((array_length - 1) * hop);
+            if(tst_event(EVENT_BTN2)) {
+                __low_power_mode_off_on_exit();
+            } else {
+                LED_arr_ptr = LED_arr_ptr - ((array_length - 1) * hop);
+            }
         }
         LEDcnt = *LED_arr_ptr;
         TGLBIT(P1OUT, BIT2);
@@ -93,7 +98,6 @@ __interrupt Void TA0_ISR(Void) {
             ++BTN2hyst;
             if(BTN2hyst EQ HYSTMAX) {
                 set_event(EVENT_BTN2);
-                __low_power_mode_off_on_exit();
             }
         }
     } else if(BTN2hyst GT 0) {
