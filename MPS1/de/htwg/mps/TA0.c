@@ -38,6 +38,16 @@ GLOBAL Void set_blink_muster(UInt arg) {
  * dass ein Blinkmuster selektiert wird.
  */
     LED_arr_ptr = LED_arr[arg];
+    if(arg LT 4) {
+        array_length = 3;
+    } else {
+        if(arg EQ 4) {
+            array_length = 4;
+        }
+        if(arg EQ 5) {
+            array_length = 7;
+        }
+    }
     LEDcnt = *LED_arr_ptr;
 }
 
@@ -86,9 +96,7 @@ __interrupt Void TA0_ISR(Void) {
                 __low_power_mode_off_on_exit();
             }
         }
-    } else {
-        if(BTN2hyst GT 0) {
-            BTN2hyst--;
-        }
+    } else if(BTN2hyst GT 0) {
+        BTN2hyst--;
     }
 }

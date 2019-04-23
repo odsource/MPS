@@ -23,7 +23,7 @@ EXTERN Void TA0_Init(Void);
 
 
 #define LEDmax 25
-#define HYSTMAX 5
+#define HYSTMAX 8
 
 EXTERN Void set_blink_muster(UInt);
 
