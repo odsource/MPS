@@ -17,6 +17,8 @@
 
 // es sind geeignete Datenstrukturen für den Datenaustausch
 // zwischen den Handlern festzulegen.
+LOCAL UShort button_mask = 0x00;
+#define BUTTON_MASK 0xFF
 
 LOCAL Void AS1108_Write(UChar adr, UChar arg) {
    Char ch = UCA1RXBUF;   // dummy read, UCRXIFG := 0, UCOE := 0
@@ -62,13 +64,38 @@ GLOBAL Void SPI_Init(Void) {
 
 // der Treiberbaustein AS1108 ist hier über die SPI-Schnittstelle zu initialisieren
 GLOBAL Void AS1108_Init(Void) {
-
+    AS1108_Write(0x0C, 0x81);
+    AS1108_Write(0x09, 0xFF);
+    AS1108_Write(0x0B, 0x03);
 }
 
 // ----------------------------------------------------------------------------
 
 // der Button-Handler beinhaltet keine Zustandsmaschiene
 GLOBAL Void Button_Handler(Void) {
+    if (SETBIT(button_mask, tst_event(EVENT_BTN3 + EVENT_BTN4 + EVENT_BTN5 + EVENT_BTN6)) NE 0x00) {
+        clr_event(button_mask);
+        set_event(EVENT_DIGI);
+    }
+//    if (tst_event(EVENT_BTN3)) {
+//        SETBIT(button_mask, EVENT_BTN3);
+//        clr_event(EVENT_BTN3);
+//    }
+//
+//    if (tst_event(EVENT_BTN4)) {
+//        SETBIT(button_mask, EVENT_BTN4);
+//        clr_event(EVENT_BTN4);
+//    }
+//
+//    if (tst_event(EVENT_BTN5)) {
+//        SETBIT(button_mask, EVENT_BTN5);
+//        clr_event(EVENT_BTN5);
+//    }
+//
+//    if (tst_event(EVENT_BTN6)) {
+//        SETBIT(button_mask, EVENT_BTN6);
+//        clr_event(EVENT_BTN6);
+//    }
 
 }
 
@@ -76,7 +103,13 @@ GLOBAL Void Button_Handler(Void) {
 
 // der Number-Handler beinhaltet keine Zustandsmaschiene
 GLOBAL Void Number_Handler(Void) {
+    if(tst_event(EVENT_DIGI)) {
+        if(TSTBIT(P1OUT,  BIT2)) {
 
+        } else {
+
+        }
+    }
 }
 
 // ----------------------------------------------------------------------------

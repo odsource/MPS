@@ -84,4 +84,13 @@ LOCAL Void Port_Init(Void) {
    CLRBIT(P1SEL1, BIT0 + BIT1);
    CLRBIT(P1REN,  BIT0 + BIT1);
 
+   // set up Pin 0 at Port 3 => input, GPIO_BTN0
+   // set up Pin 1 at Port 3 => input, GPIO_BTN1
+   // set up Pin 2 at Port 3 => input, GPIO_BTN2
+   // set up Pin 3 at Port 3 => input, GPIO_BTN3
+   CLRBIT(P3OUT,  BIT0 + BIT1 + BIT2 + BIT3);
+   CLRBIT(P3DIR,  BIT0 + BIT1 + BIT2 + BIT3);
+   CLRBIT(P3SEL0, BIT0 + BIT1 + BIT2 + BIT3);
+   CLRBIT(P3SEL1, BIT0 + BIT1 + BIT2 + BIT3);
+   CLRBIT(P3REN,  BIT0 + BIT1 + BIT2 + BIT3);
 }

@@ -22,6 +22,10 @@ LOCAL UShort hop = sizeof(UInt) / 2;
 
 LOCAL UShort BTN1hyst = 0;
 LOCAL UShort BTN2hyst = 0;
+LOCAL UShort GPIO_BTN0_hyst = 0;
+LOCAL UShort GPIO_BTN1_hyst = 0;
+LOCAL UShort GPIO_BTN2_hyst = 0;
+LOCAL UShort GPIO_BTN3_hyst = 0;
 
 GLOBAL Void set_blink_muster(UInt arg) {
 /*
@@ -81,6 +85,7 @@ __interrupt Void TA0_ISR(Void) {
     } else if(BTN1hyst GT 0) {
         BTN1hyst--;
     }
+
     if(TSTBIT(P1IN, BIT1)) {
         if(BTN2hyst LT HYSTMAX) {
             ++BTN2hyst;
@@ -92,4 +97,53 @@ __interrupt Void TA0_ISR(Void) {
     } else if(BTN2hyst GT 0) {
         BTN2hyst--;
     }
+
+    if(TSTBIT(P3IN, BIT0)) {
+        if(GPIO_BTN0_hyst LT HYSTMAX) {
+            ++GPIO_BTN0_hyst;
+            if(GPIO_BTN0_hyst EQ HYSTMAX) {
+                set_event(EVENT_BTN3);
+                __low_power_mode_off_on_exit();
+            }
+        }
+    } else if(GPIO_BTN0_hyst GT 0) {
+        GPIO_BTN0_hyst--;
+    }
+
+    if(TSTBIT(P3IN, BIT1)) {
+        if(GPIO_BTN1_hyst LT HYSTMAX) {
+            ++GPIO_BTN1_hyst;
+            if(GPIO_BTN1_hyst EQ HYSTMAX) {
+                set_event(EVENT_BTN4);
+                __low_power_mode_off_on_exit();
+            }
+        }
+    } else if(GPIO_BTN1_hyst GT 0) {
+        GPIO_BTN1_hyst--;
+    }
+
+    if(TSTBIT(P3IN, BIT2)) {
+        if(GPIO_BTN2_hyst LT HYSTMAX) {
+            ++GPIO_BTN2_hyst;
+            if(GPIO_BTN2_hyst EQ HYSTMAX) {
+                set_event(EVENT_BTN5);
+                __low_power_mode_off_on_exit();
+            }
+        }
+    } else if(GPIO_BTN2_hyst GT 0) {
+        GPIO_BTN2_hyst--;
+    }
+
+    if(TSTBIT(P3IN, BIT3)) {
+        if(GPIO_BTN3_hyst LT HYSTMAX) {
+            ++GPIO_BTN3_hyst;
+            if(GPIO_BTN3_hyst EQ HYSTMAX) {
+                set_event(EVENT_BTN6);
+                __low_power_mode_off_on_exit();
+            }
+        }
+    } else if(GPIO_BTN3_hyst GT 0) {
+        GPIO_BTN3_hyst--;
+    }
+
 }
