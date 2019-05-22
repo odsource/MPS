@@ -18,7 +18,11 @@
 // es sind geeignete Datenstrukturen für den Datenaustausch
 // zwischen den Handlern festzulegen.
 LOCAL UShort button_mask = 0x00;
-#define BUTTON_MASK 0xFF
+LOCAL Short digit_arr[] = {0x00, 0x00, 0x00, 0x00};
+LOCAL Short* digit_ptr = &digit_arr;
+LOCAL Short overflow = 0;
+LOCAL UShort digit_ctr = 0;
+
 
 LOCAL Void AS1108_Write(UChar adr, UChar arg) {
    Char ch = UCA1RXBUF;   // dummy read, UCRXIFG := 0, UCOE := 0
@@ -64,17 +68,29 @@ GLOBAL Void SPI_Init(Void) {
 
 // der Treiberbaustein AS1108 ist hier über die SPI-Schnittstelle zu initialisieren
 GLOBAL Void AS1108_Init(Void) {
+    // Initialize shutdown register
     AS1108_Write(0x0C, 0x81);
+    // Initialize decode-mode
     AS1108_Write(0x09, 0xFF);
+    // Initialize scan-limit
     AS1108_Write(0x0B, 0x03);
+
+    // Set the display to all zero
+    AS1108_Write(0x01, 0x00);
+    AS1108_Write(0x02, 0x00);
+    AS1108_Write(0x03, 0x00);
+    AS1108_Write(0x04, 0x00);
 }
 
 // ----------------------------------------------------------------------------
 
 // der Button-Handler beinhaltet keine Zustandsmaschiene
 GLOBAL Void Button_Handler(Void) {
-    if (SETBIT(button_mask, tst_event(EVENT_BTN3 + EVENT_BTN4 + EVENT_BTN5 + EVENT_BTN6)) NE 0x00) {
+    if (tst_event(EVENT_BTN3 + EVENT_BTN4 + EVENT_BTN5 + EVENT_BTN6) NE 0x00) {
+        CLRBIT(button_mask, 0xFF);
+        SETBIT(button_mask, tst_event(EVENT_BTN3 + EVENT_BTN4 + EVENT_BTN5 + EVENT_BTN6));
         clr_event(button_mask);
+        button_mask = button_mask >> 3;
         set_event(EVENT_DIGI);
     }
 //    if (tst_event(EVENT_BTN3)) {
@@ -103,12 +119,54 @@ GLOBAL Void Button_Handler(Void) {
 
 // der Number-Handler beinhaltet keine Zustandsmaschiene
 GLOBAL Void Number_Handler(Void) {
+    LOCAL UShort led;
     if(tst_event(EVENT_DIGI)) {
-        if(TSTBIT(P1OUT,  BIT2)) {
-
-        } else {
+        led = TSTBIT(P2OUT, BIT7);
+        if(led EQ 0x80) {
+//            if(digit_ctr EQ 0) {
+//                digit_ptr = &digit_arr[3];
+//            }
+            if(overflow GT 0) {
+                overflow -= 1;
+                if(*digit_ptr EQ 0) {
+                    overflow += 1;
+                }
+                *digit_ptr = (*digit_ptr - 1) % BASE;
+            }
+            if(button_mask BAND 0x01) {
+                if(*digit_ptr EQ 0) {
+                    overflow += 1;
+                }
+                *digit_ptr = (*digit_ptr - 1) % BASE;
+            }
+            if(*digit_ptr LT 0) {
+                *digit_ptr = 9;
+            }
+        } else if(led EQ 0x00){
+            if(overflow GT 0) {
+                overflow -= 1;
+                if(*digit_ptr EQ 9) {
+                    overflow += 1;
+                }
+                *digit_ptr = (*digit_ptr + 1) % BASE;
+            }
+            if(button_mask BAND 0x1) {
+                if(*digit_ptr EQ 9) {
+                    overflow += 1;
+                }
+                *digit_ptr = (*digit_ptr + 1) % BASE;
+            }
 
         }
+        digit_ctr += 1;
+        if(digit_ctr EQ 4) {
+            overflow = 0;
+            digit_ctr = 0;
+            clr_event(EVENT_DIGI);
+            set_event(EVENT_7LED);
+        }
+        digit_ptr += sizeof(UShort) / 2;
+        button_mask = button_mask >> 1;
     }
 }
 
@@ -116,6 +174,17 @@ GLOBAL Void Number_Handler(Void) {
 
 // der AS1108_Hander beinhaltet eine Zustandsmaschine
 GLOBAL Void AS1108_Handler(Void) {
-
+    if(tst_event(EVENT_7LED)) {
+        clr_event(EVENT_7LED);
+        digit_ptr = &digit_arr;
+        AS1108_Write(0x01, *digit_ptr);
+        digit_ptr += sizeof(UShort) / 2;
+        AS1108_Write(0x02, *digit_ptr);
+        digit_ptr += sizeof(UShort) / 2;
+        AS1108_Write(0x03, *digit_ptr);
+        digit_ptr += sizeof(UShort) / 2;
+        AS1108_Write(0x04, *digit_ptr);
+        digit_ptr = &digit_arr;
+    }
 }
 
