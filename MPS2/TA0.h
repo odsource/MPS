@@ -29,7 +29,7 @@ LOCAL UInt LEDarr6[] = {50, 50, 50, 50, 50, 200, 0};
 LOCAL UInt* LED_arr[] = {LEDarr1, LEDarr2, LEDarr3, LEDarr4, LEDarr5, LEDarr6};
 
 #define LEDmax 25
-#define HYSTMAX 8
+#define HYSTMAX 5
 
 EXTERN Void set_blink_muster(UInt);
 
