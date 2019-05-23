@@ -18,11 +18,20 @@
 // es sind geeignete Datenstrukturen für den Datenaustausch
 // zwischen den Handlern festzulegen.
 LOCAL UShort button_mask = 0x00;
-LOCAL Short digit_arr[] = {0x00, 0x00, 0x00, 0x00};
-LOCAL Short* digit_ptr = &digit_arr;
+LOCAL Short digit_arr[] = {0x01, 0x00, 0x02, 0x00, 0x03, 0x00, 0x04, 0x00};
+LOCAL Short* digit_ptr = &digit_arr[1];
 LOCAL Short overflow = 0;
 LOCAL UShort digit_ctr = 0;
 
+typedef Void (* VoidFunc)(Void);
+
+// Funktionsprototypen
+LOCAL Void State0(Void);
+LOCAL Void State1(Void);
+LOCAL Void State2(Void);
+
+LOCAL VoidFunc state = State0;
+LOCAL UInt i;
 
 LOCAL Void AS1108_Write(UChar adr, UChar arg) {
    Char ch = UCA1RXBUF;   // dummy read, UCRXIFG := 0, UCOE := 0
@@ -74,6 +83,8 @@ GLOBAL Void AS1108_Init(Void) {
     AS1108_Write(0x09, 0xFF);
     // Initialize scan-limit
     AS1108_Write(0x0B, 0x03);
+    // Initialize Intensity control register
+    AS1108_Write(0x0A, 0x0F);
 
     // Set the display to all zero
     AS1108_Write(0x01, 0x00);
@@ -165,7 +176,7 @@ GLOBAL Void Number_Handler(Void) {
             clr_event(EVENT_DIGI);
             set_event(EVENT_7LED);
         }
-        digit_ptr += sizeof(UShort) / 2;
+        digit_ptr += sizeof(UShort);
         button_mask = button_mask >> 1;
     }
 }
@@ -174,17 +185,62 @@ GLOBAL Void Number_Handler(Void) {
 
 // der AS1108_Hander beinhaltet eine Zustandsmaschine
 GLOBAL Void AS1108_Handler(Void) {
+    (*state)();
+}
+
+//    Char ch = UCA1RXBUF;   // dummy read, UCRXIFG := 0, UCOE := 0
+//    CLRBIT(P2OUT,  BIT3);  // Select aktivieren
+//    UCA1TXBUF = adr;       // Adresse ausgeben
+//    while (TSTBIT(UCA1IFG, UCRXIFG) EQ 0);
+//    ch = UCA1RXBUF;        // dummy read
+//    UCA1TXBUF = arg;       // Datum ausgeben
+//    while (TSTBIT(UCA1IFG, UCRXIFG) EQ 0);
+//    ch = UCA1RXBUF;        // dummy read
+//    SETBIT(P2OUT,  BIT3);  // Select deaktivieren
+
+LOCAL Void State0(Void) {
     if(tst_event(EVENT_7LED)) {
+        state = State1;
+        set_event(EVENT_STATE);
         clr_event(EVENT_7LED);
         digit_ptr = &digit_arr;
-        AS1108_Write(0x01, *digit_ptr);
-        digit_ptr += sizeof(UShort) / 2;
-        AS1108_Write(0x02, *digit_ptr);
-        digit_ptr += sizeof(UShort) / 2;
-        AS1108_Write(0x03, *digit_ptr);
-        digit_ptr += sizeof(UShort) / 2;
-        AS1108_Write(0x04, *digit_ptr);
-        digit_ptr = &digit_arr;
+        i = 1;
     }
 }
 
+LOCAL Void State1(Void) {
+    CLRBIT(P2OUT, BIT3);    // Select activated
+    UCA1TXBUF = *digit_ptr;
+    digit_ptr += sizeof(UShort) / 2;
+    state = State2;
+    if(i % 2 EQ 0) {
+        SETBIT(P2OUT, BIT3); // Select deactivated
+    }
+    if(i EQ 9) {
+        i = 0;
+        clr_event(EVENT_STATE);
+        state = State0;
+        digit_ptr = &digit_arr[1];
+    }
+}
+
+LOCAL Void State2(Void) {
+    if(TSTBIT(UCA1IFG, UCRXIFG) NE 0) {
+        i += 1;
+
+        state = State1;
+    }
+}
+
+//        if(tst_event(EVENT_7LED)) {
+//            clr_event(EVENT_7LED);
+//            digit_ptr = &digit_arr[1];
+//            AS1108_Write(0x01, *digit_ptr);
+//            digit_ptr += sizeof(UShort);
+//            AS1108_Write(0x02, *digit_ptr);
+//            digit_ptr += sizeof(UShort);
+//            AS1108_Write(0x03, *digit_ptr);
+//            digit_ptr += sizeof(UShort);
+//            AS1108_Write(0x04, *digit_ptr);
+//            digit_ptr = &digit_arr[1];
+//        }
