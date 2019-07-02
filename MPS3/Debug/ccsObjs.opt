@@ -1,0 +1,1 @@
+"./de/htwg/mps/AS1108.obj" "./de/htwg/mps/TA0.obj" "./de/htwg/mps/UART.obj" "./de/htwg/mps/event.obj" "./de/htwg/mps/main.obj" "../lnk_msp430fr5729.cmd" -llibmpu_init_fr57xx.a -llibmath.a -llibc.a 
