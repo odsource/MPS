@@ -33,7 +33,7 @@ GLOBAL Void UCA0_Init(Void) {
                                        // ... UART mode, Asynchronous mode
 
     SETBIT(UCA0CTLW0, UCSSEL__ACLK);   // select clock source: ACLK with 614.4 kHz
-    UCA0BRW = 2;                       // set clock prescaler for 9600 baud
+    UCA0BRW = 2;                       // set clock prescaler for 14400 baud
     UCA0MCTLW_L = 10 << 4;                   // first modulation stage
     UCA0MCTLW_H = 0xD6;                // second modulation stage
     SETBIT(UCA0MCTLW, UCOS16);         // enable 16 times oversampling
@@ -73,26 +73,14 @@ __interrupt Void UCA0_ISR(Void) {
 
    switch (UCA0IV) {
       case 0x02:  // Vector 2: Receive buffer full
-          if (TSTBIT(UCA0STATW, UCRXERR)) {
+          if (TSTBIT(UCA0STATW, UCBRK)) {
               ch = UCA0RXBUF; // dummy read
               idx = 0;
-              set_event(ERROR_FOP);
-          } else if (TSTBIT(UCA0STATW, UCFE)) {
-              ch = UCA0RXBUF;
-              idx = 0;
-              set_event(ERROR_FOP);
-          } else if (TSTBIT(UCA0STATW, UCOE)) {
-              ch = UCA0RXBUF;
-              idx = 0;
-              set_event(ERROR_FOP);
-          } else if (TSTBIT(UCA0STATW, UCPE)) {
-              ch = UCA0RXBUF;
-              idx = 0;
-              set_event(ERROR_FOP);
-          } else if (TSTBIT(UCA0STATW, UCBRK)) {
-              ch = UCA0RXBUF;
-              idx = 0;
               set_event(ERROR_BRK);
+          } else if (TSTBIT(UCA0STATW, UCRXERR)) {
+              ch = UCA0RXBUF;
+              idx = 0;
+              set_event(ERROR_FOP);
           } else {
               ch = UCA0RXBUF;
               if (ch EQ '\r') {

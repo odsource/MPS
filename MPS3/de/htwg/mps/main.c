@@ -23,9 +23,8 @@ GLOBAL Void main(Void) {
    Port_Init();   // set up LED ports
    SPI_Init();
    TA0_Init();    // set up BTN Ports and Timer A0
-
-   UCA0_Init();
    AS1108_Init();
+   UCA0_Init();
 
    while(TRUE) {
       wait_for_event();
